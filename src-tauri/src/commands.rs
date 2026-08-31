@@ -103,10 +103,15 @@ pub fn get_settings(state: State<'_, AppState>) -> Settings {
 /// git 路径校验 + 版本探测（设置页实时反馈）
 #[tauri::command]
 pub async fn probe_git(git_path: String) -> Result<String, String> {
-    let p = git_path.trim();
-    let git = if p.is_empty() { GIT_BIN } else { p };
+    let p = git_path.trim().to_string();
+    let git: String = if p.is_empty() {
+        GIT_BIN.to_string()
+    } else {
+        p
+    };
+    let git_for_err = git.clone();
     let out = tokio::task::spawn_blocking(move || {
-        let mut cmd = std::process::Command::new(git);
+        let mut cmd = std::process::Command::new(&git);
         cmd.arg("--version");
         #[cfg(windows)]
         {
@@ -117,7 +122,7 @@ pub async fn probe_git(git_path: String) -> Result<String, String> {
     })
     .await
     .map_err(|e| format!("探测任务失败: {e}"))?
-    .map_err(|e| format!("无法执行 git ({git}): {e}"))?;
+    .map_err(|e| format!("无法执行 git ({git_for_err}): {e}"))?;
     if !out.status.success() {
         return Err(format!(
             "git --version 失败 (exit {:?}): {}",
