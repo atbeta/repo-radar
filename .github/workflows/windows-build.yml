@@ -74,12 +74,19 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: raw-exe
+          path: pkg/exe
+
+      - name: Download installer
+        uses: actions/download-artifact@v4
+        with:
+          name: RepoRadar-windows-installer-${{ github.ref_name }}
+          path: pkg/installer
 
       - name: Package portable zip
         shell: pwsh
         run: |
-          Get-ChildItem . -Filter *.exe | Format-Table Name,Length
-          $exe = Get-ChildItem . -Filter *.exe | Select-Object -First 1
+          Get-ChildItem pkg/exe | Format-Table Name,Length
+          $exe = Get-ChildItem pkg/exe -Filter *.exe | Select-Object -First 1
           if (-not $exe) { Write-Error "no exe in artifact"; exit 1 }
           Copy-Item $exe.FullName RepoRadar.exe -Force
           $tag = "${{ github.ref_name }}" -replace '^v',''
@@ -95,19 +102,19 @@ jobs:
           if-no-files-found: error
 
       - name: Attach artifacts to GitHub Release
+        # GH_REPO 必须显式指定：package job 没有 checkout，gh 找不到 git 上下文
         if: github.ref_type == 'tag'
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
           TAG="${{ github.ref_name }}"
-          for _ in $(seq 1 30); do
-            if gh release view "$TAG" >/dev/null 2>&1; then
-              break
-            fi
-            sleep 5
-          done
-          gh release create "$TAG" --title "$TAG" --notes "RepoRadar $TAG" 2>/dev/null || true
+          # 本 workflow 自己创建 Release，无并发创建者，无需等待循环
+          gh release create "$TAG" --title "$TAG" --notes "RepoRadar $TAG" 2>/dev/null \
+            || gh release view "$TAG" >/dev/null
           gh release upload "$TAG" \
+            pkg/installer/*.exe \
             RepoRadar-*-portable-windows.zip --clobber
+          gh release view "$TAG" --json assets --jq '.assets[].name'
