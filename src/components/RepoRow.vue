@@ -6,6 +6,8 @@ defineProps<{
   r: RepoStatus
   selected: boolean
   running: boolean
+  /** 扫描后的占位阶段：error='加载中…' 不算真错误 */
+  loading?: boolean
 }>()
 
 defineEmits<{
@@ -22,7 +24,8 @@ defineEmits<{
       stale: r.behind > 0,
       running,
       selected,
-      err: !!r.error,
+      err: !!r.error && !loading,
+      loading: !!r.error && loading,
     }"
     :title="r.path"
   >
@@ -30,7 +33,7 @@ defineEmits<{
       <input
         type="checkbox"
         :checked="selected"
-        :disabled="!!r.error"
+        :disabled="!!r.error && !loading"
         @change="$emit('toggle')"
       />
     </td>
@@ -41,7 +44,7 @@ defineEmits<{
       <span v-else-if="!r.error" class="branch none">detached</span>
     </td>
     <td class="clean">
-      <span v-if="r.error" class="tag err-tag" :title="r.error">错误</span>
+      <span v-if="r.error" class="tag err-tag" :title="r.error">{{ loading ? '读取中' : '错误' }}</span>
       <span v-else-if="r.is_clean" class="ok">✓</span>
       <span v-else class="dirty-badge">
         {{ r.dirty_count }} 项
@@ -80,6 +83,7 @@ defineEmits<{
 tr.selected { background: rgb(var(--primary-soft)); }
 tr.running { background: rgb(var(--warning-soft)); }
 tr.err { opacity: 0.7; }
+tr.loading { opacity: 0.55; }
 .sel { width: 28px; text-align: center; }
 .repo-name { font-weight: 600; }
 .branch {

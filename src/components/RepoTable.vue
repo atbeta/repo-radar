@@ -62,6 +62,7 @@ function onHeader(k: SortKey | null) {
           :r="r"
           :selected="selected.has(r.path)"
           :running="running.has(r.path)"
+          :loading="r.error === '加载中…'"
           @toggle="emit('toggle', r.path)"
           @fetch="emit('fetch', r.path)"
           @pull="emit('pull', r.path)"

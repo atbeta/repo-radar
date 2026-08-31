@@ -165,12 +165,20 @@ pub fn discover_roots(root: &Path, max_depth: usize, exclude: &[PathBuf]) -> any
 // ---------------------------------------------------------------------------
 
 fn run_git_sync(git: &str, cwd: &Path, args: &[&str]) -> std::io::Result<std::process::Output> {
-    std::process::Command::new(git)
-        .arg("--no-optional-locks")
+    let mut cmd = std::process::Command::new(git);
+    cmd.arg("--no-optional-locks")
         .arg("-C")
         .arg(cwd)
-        .args(args)
-        .output()
+        .args(args);
+    #[cfg(windows)]
+    {
+        use std::os::windows::process::CommandExt;
+        // CREATE_NO_WINDOW：git 及其 hook 子进程（如公司环境的 git-ai）不弹黑色控制台窗口。
+        // hook 依然照常执行，只是静默运行。
+        const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+        cmd.creation_flags(CREATE_NO_WINDOW);
+    }
+    cmd.output()
 }
 
 /// 解析 `status --porcelain=v2 --branch` 输出
@@ -252,7 +260,7 @@ pub async fn repo_status(path: &Path, git: &str) -> RepoStatus {
     }
     let is_worktree = dot_git.is_file();
 
-    let st = {
+    let mut st = {
         let git = git.clone();
         let p = path_buf.clone();
         tokio::time::timeout(
@@ -263,6 +271,23 @@ pub async fn repo_status(path: &Path, git: &str) -> RepoStatus {
         )
         .await
     };
+
+    // 瞬态失败自动重试一次：公司环境的 git hook（如 git-ai）冷启动慢/锁竞争，
+    // 可能让首轮 status 偶发失败（用户症状：扫描后全显示错误，fetch 后恢复）。
+    // 判定：超时 / spawn 失败 / git 进程启动失败 / 非零退出码，都值得重试一次。
+    let first_ok = matches!(&st, Ok(Ok(Ok(out))) if out.status.success());
+    if !first_ok {
+        tokio::time::sleep(Duration::from_millis(300)).await;
+        let git2 = git.clone();
+        let p2 = path_buf.clone();
+        st = tokio::time::timeout(
+            STATUS_TIMEOUT,
+            tokio::task::spawn_blocking(move || {
+                run_git_sync(&git2, &p2, &["status", "--porcelain=v2", "--branch"])
+            }),
+        )
+        .await;
+    }
     let rm = {
         let git = git.clone();
         let p = path_buf.clone();
