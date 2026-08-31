@@ -26,6 +26,9 @@ pub struct Settings {
     pub concurrency: usize,
     /// 排除目录
     pub exclude: Vec<String>,
+    /// git 可执行文件路径；空 = 用 PATH 中的 `git`
+    #[serde(default)]
+    pub git_path: String,
 }
 
 impl Default for Settings {
@@ -35,6 +38,7 @@ impl Default for Settings {
             max_depth: radar_core::DEFAULT_MAX_DEPTH,
             concurrency: radar_core::DEFAULT_CONCURRENCY,
             exclude: Vec::new(),
+            git_path: String::new(),
         }
     }
 }
@@ -76,6 +80,17 @@ pub struct AppState {
     pub last_repos: Mutex<Vec<PathBuf>>,
 }
 
+/// 生效的 git 可执行文件：设置非空用设置值，否则 PATH 中的 `git`
+fn effective_git(state: &State<'_, AppState>) -> String {
+    let s = state.settings.lock().unwrap();
+    let gp = s.git_path.trim();
+    if gp.is_empty() {
+        GIT_BIN.to_string()
+    } else {
+        gp.to_string()
+    }
+}
+
 // ---------------------------------------------------------------------------
 // 命令：设置
 // ---------------------------------------------------------------------------
@@ -83,6 +98,34 @@ pub struct AppState {
 #[tauri::command]
 pub fn get_settings(state: State<'_, AppState>) -> Settings {
     state.settings.lock().unwrap().clone()
+}
+
+/// git 路径校验 + 版本探测（设置页实时反馈）
+#[tauri::command]
+pub async fn probe_git(git_path: String) -> Result<String, String> {
+    let p = git_path.trim();
+    let git = if p.is_empty() { GIT_BIN } else { p };
+    let out = tokio::task::spawn_blocking(move || {
+        let mut cmd = std::process::Command::new(git);
+        cmd.arg("--version");
+        #[cfg(windows)]
+        {
+            use std::os::windows::process::CommandExt;
+            cmd.creation_flags(0x0800_0000); // CREATE_NO_WINDOW
+        }
+        cmd.output()
+    })
+    .await
+    .map_err(|e| format!("探测任务失败: {e}"))?
+    .map_err(|e| format!("无法执行 git ({git}): {e}"))?;
+    if !out.status.success() {
+        return Err(format!(
+            "git --version 失败 (exit {:?}): {}",
+            out.status.code(),
+            String::from_utf8_lossy(&out.stderr).trim()
+        ));
+    }
+    Ok(String::from_utf8_lossy(&out.stdout).trim().to_string())
 }
 
 #[tauri::command]
@@ -99,6 +142,11 @@ pub fn save_settings(
     }
     if settings.concurrency == 0 || settings.concurrency > 32 {
         return Err("并发数需在 1-32 之间".into());
+    }
+    // git_path 允许空（用 PATH），但填了就必须已存在
+    let gp = settings.git_path.trim();
+    if !gp.is_empty() && !std::path::Path::new(gp).is_file() {
+        return Err(format!("git 路径不存在或不是文件: {gp}"));
     }
     persist_settings(&app, &settings)?;
     *state.settings.lock().unwrap() = settings;
@@ -159,8 +207,16 @@ pub async fn read_status(
     if resolved.is_empty() {
         return Err("没有可读取的仓库（先扫描或手动指定路径）".into());
     }
-    let concurrency = state.settings.lock().unwrap().concurrency;
-    Ok(radar_core::read_statuses(resolved, GIT_BIN, concurrency).await)
+    let (concurrency, git_bin) = {
+        let s = state.settings.lock().unwrap();
+        let g = if s.git_path.trim().is_empty() {
+            GIT_BIN.to_string()
+        } else {
+            s.git_path.trim().to_string()
+        };
+        (s.concurrency, g)
+    };
+    Ok(radar_core::read_statuses(resolved, &git_bin, concurrency).await)
 }
 
 /// 手动添加单个仓库（不经过扫描）
@@ -177,7 +233,8 @@ pub async fn add_repo(state: State<'_, AppState>, path: String) -> Result<RepoSt
             last.sort();
         }
     }
-    Ok(radar_core::repo_status(&p, GIT_BIN).await)
+    let git_bin = effective_git(&state);
+    Ok(radar_core::repo_status(&p, &git_bin).await)
 }
 
 // ---------------------------------------------------------------------------
@@ -203,7 +260,8 @@ async fn run_batch(
             let _ = app.emit(EVT_BATCH, &ev);
         });
 
-    let report = radar_core::batch_op(paths, GIT_BIN, op, concurrency, Some(on_event))
+    let git_bin = effective_git(&state);
+    let report = radar_core::batch_op(paths, &git_bin, op, concurrency, Some(on_event))
         .await
         .map_err(|e| format!("批量操作失败: {e}"))?;
 
@@ -237,7 +295,8 @@ async fn run_batch_subset(
         std::sync::Arc::new(move |ev: BatchEvent| {
             let _ = app.emit(EVT_BATCH, &ev);
         });
-    let report = radar_core::batch_op(resolved, GIT_BIN, op, concurrency, Some(on_event))
+    let git_bin = effective_git(&state);
+    let report = radar_core::batch_op(resolved, &git_bin, op, concurrency, Some(on_event))
         .await
         .map_err(|e| format!("批量操作失败: {e}"))?;
     Ok(report.outcomes)

@@ -30,6 +30,8 @@ export interface Settings {
   max_depth: number
   concurrency: number
   exclude: string[]
+  /** git 可执行文件路径；空 = 用 PATH 中的 git */
+  git_path?: string
 }
 
 export type SortKey =

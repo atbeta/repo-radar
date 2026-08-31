@@ -17,6 +17,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             commands::get_settings,
             commands::save_settings,
+            commands::probe_git,
             commands::scan_repos,
             commands::read_status,
             commands::add_repo,

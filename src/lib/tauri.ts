@@ -49,6 +49,11 @@ export async function saveSettings(s: Settings): Promise<void> {
   await invoke('save_settings', { settings: s })
 }
 
+/** 探测 git 路径，返回 `git version x.y.z...` 或抛错 */
+export async function probeGit(gitPath: string): Promise<string> {
+  return invoke<string>('probe_git', { gitPath })
+}
+
 export async function listenBatch(
   handler: (ev: BatchEvent) => void,
 ): Promise<UnlistenFn> {

@@ -1,12 +1,30 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import type { Settings } from '../api'
+import { probeGit } from '../lib/tauri'
 
 const props = defineProps<{ settings: Settings }>()
 const emit = defineEmits<{
   (e: 'close'): void
   (e: 'save'): void
 }>()
+
+const probing = ref(false)
+const probeResult = ref('')
+const probeError = ref('')
+
+async function doProbe() {
+  probing.value = true
+  probeResult.value = ''
+  probeError.value = ''
+  try {
+    probeResult.value = await probeGit(props.settings.git_path ?? '')
+  } catch (e) {
+    probeError.value = String(e)
+  } finally {
+    probing.value = false
+  }
+}
 
 const rootsText = computed({
   get: () => props.settings.roots.join('\n'),
@@ -53,6 +71,23 @@ const excludeText = computed({
           <input v-model.number="settings.concurrency" type="number" min="1" max="32" />
         </label>
       </div>
+
+      <label class="field">
+        <span class="label">Git 可执行文件路径（留空 = 使用 PATH 中的 git）</span>
+        <div class="gitrow">
+          <input
+            v-model="settings.git_path"
+            type="text"
+            placeholder="如 D:\PortableGit\bin\git.exe"
+            spellcheck="false"
+          />
+          <button class="btn probe" :disabled="probing" @click="doProbe">
+            {{ probing ? '探测中…' : '探测' }}
+          </button>
+        </div>
+        <span v-if="probeResult" class="probe-ok">✓ {{ probeResult }}</span>
+        <span v-else-if="probeError" class="probe-bad">✕ {{ probeError }}</span>
+      </label>
 
       <p class="hint">
         深度 = 从根目录往下最多探测几层目录找 .git。改动只影响之后的「扫描」，
@@ -106,6 +141,21 @@ textarea { resize: vertical; font-family: var(--font-mono); font-size: var(--tex
 textarea:focus, input:focus { outline: none; border-color: rgb(var(--ring)); }
 .row2 { display: flex; gap: 12px; }
 .row2 .field { flex: 1; }
+.gitrow { display: flex; gap: 8px; }
+.gitrow input { flex: 1; }
+.btn {
+  padding: 7px 14px;
+  border-radius: var(--radius);
+  border: 1px solid rgb(var(--border));
+  background: rgb(var(--muted));
+  color: rgb(var(--foreground));
+  cursor: pointer;
+  font-size: var(--text-xs);
+  white-space: nowrap;
+}
+.btn:disabled { opacity: 0.5; cursor: default; }
+.probe-ok { display: block; margin-top: 5px; font-size: var(--text-2xs); color: rgb(var(--success)); }
+.probe-bad { display: block; margin-top: 5px; font-size: var(--text-2xs); color: rgb(var(--destructive)); }
 .hint { font-size: var(--text-2xs); color: rgb(var(--muted-foreground)); line-height: 1.5; }
 .btns { display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px; }
 </style>
