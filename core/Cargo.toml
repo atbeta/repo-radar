@@ -1,0 +1,12 @@
+[package]
+name = "radar-core"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+description = "Headless engine for Repo Radar: discover git repos, read status, batch fetch/pull"
+
+[dependencies]
+anyhow = "1"
+serde = { version = "1", features = ["derive"] }
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "process", "sync", "time"] }
+walkdir = "2"

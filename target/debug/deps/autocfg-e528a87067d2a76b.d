@@ -1,0 +1,10 @@
+/opt/data/repo-radar/target/debug/deps/autocfg-e528a87067d2a76b.d: /home/hermes/.hermes/profiles/coder/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/autocfg-1.5.1/src/lib.rs /home/hermes/.hermes/profiles/coder/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/autocfg-1.5.1/src/error.rs /home/hermes/.hermes/profiles/coder/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/autocfg-1.5.1/src/rustc.rs /home/hermes/.hermes/profiles/coder/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/autocfg-1.5.1/src/version.rs
+
+/opt/data/repo-radar/target/debug/deps/libautocfg-e528a87067d2a76b.rlib: /home/hermes/.hermes/profiles/coder/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/autocfg-1.5.1/src/lib.rs /home/hermes/.hermes/profiles/coder/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/autocfg-1.5.1/src/error.rs /home/hermes/.hermes/profiles/coder/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/autocfg-1.5.1/src/rustc.rs /home/hermes/.hermes/profiles/coder/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/autocfg-1.5.1/src/version.rs
+
+/opt/data/repo-radar/target/debug/deps/libautocfg-e528a87067d2a76b.rmeta: /home/hermes/.hermes/profiles/coder/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/autocfg-1.5.1/src/lib.rs /home/hermes/.hermes/profiles/coder/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/autocfg-1.5.1/src/error.rs /home/hermes/.hermes/profiles/coder/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/autocfg-1.5.1/src/rustc.rs /home/hermes/.hermes/profiles/coder/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/autocfg-1.5.1/src/version.rs
+
+/home/hermes/.hermes/profiles/coder/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/autocfg-1.5.1/src/lib.rs:
+/home/hermes/.hermes/profiles/coder/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/autocfg-1.5.1/src/error.rs:
+/home/hermes/.hermes/profiles/coder/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/autocfg-1.5.1/src/rustc.rs:
+/home/hermes/.hermes/profiles/coder/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/autocfg-1.5.1/src/version.rs:

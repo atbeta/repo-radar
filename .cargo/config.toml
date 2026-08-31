@@ -1,0 +1,5 @@
+# 本仓测试固定串行：并行时大量 git 子进程在沙箱 FS 上偶发
+# "failed to write commit object"（测试搭建阶段的环境抖动，与引擎逻辑无关；
+# 引擎自身的并发行为已由 read_statuses/batch_op 内部并发逻辑显式覆盖）。
+[env]
+RUST_TEST_THREADS = "1"
