@@ -49,14 +49,18 @@ jobs:
 
       - name: Build portable zip (exe only)
         # repo-radar 无内嵌 engine，裸 exe 即完整应用（设置与状态在 %APPDATA%）
+        # exe 名不硬编码：tauri 2 可能用 cargo 包名（repo-radar.exe）或 productName（"Repo Radar.exe"）
         shell: bash
         run: |
           set -euo pipefail
           cd "$GITHUB_WORKSPACE/src-tauri/target/release"
           TAG="${{ github.ref_name }}"
           ZIP_NAME="RepoRadar-${TAG#v}-portable-windows.zip"
-          ls -la repo-radar.exe
-          7z a -tzip "$ZIP_NAME" repo-radar.exe
+          EXE=$(ls *.exe | head -1)
+          echo "bundling exe: $EXE"
+          test -n "$EXE"
+          cp "$EXE" RepoRadar.exe
+          7z a -tzip "$ZIP_NAME" RepoRadar.exe
           mv "$ZIP_NAME" "$GITHUB_WORKSPACE/"
 
       - name: Upload installer artifact
