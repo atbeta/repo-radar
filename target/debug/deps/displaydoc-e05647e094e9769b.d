@@ -1,8 +1,0 @@
-/opt/data/repo-radar/target/debug/deps/displaydoc-e05647e094e9769b.d: /home/hermes/.hermes/profiles/coder/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/displaydoc-0.2.7/src/lib.rs /home/hermes/.hermes/profiles/coder/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/displaydoc-0.2.7/src/attr.rs /home/hermes/.hermes/profiles/coder/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/displaydoc-0.2.7/src/expand.rs /home/hermes/.hermes/profiles/coder/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/displaydoc-0.2.7/src/fmt.rs
-
-/opt/data/repo-radar/target/debug/deps/libdisplaydoc-e05647e094e9769b.so: /home/hermes/.hermes/profiles/coder/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/displaydoc-0.2.7/src/lib.rs /home/hermes/.hermes/profiles/coder/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/displaydoc-0.2.7/src/attr.rs /home/hermes/.hermes/profiles/coder/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/displaydoc-0.2.7/src/expand.rs /home/hermes/.hermes/profiles/coder/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/displaydoc-0.2.7/src/fmt.rs
-
-/home/hermes/.hermes/profiles/coder/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/displaydoc-0.2.7/src/lib.rs:
-/home/hermes/.hermes/profiles/coder/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/displaydoc-0.2.7/src/attr.rs:
-/home/hermes/.hermes/profiles/coder/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/displaydoc-0.2.7/src/expand.rs:
-/home/hermes/.hermes/profiles/coder/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/displaydoc-0.2.7/src/fmt.rs:
