@@ -46,13 +46,13 @@ jobs:
 
       - name: List release dir (debug)
         shell: pwsh
-        run: Get-ChildItem src-tauri/target/release -Filter *.exe | Format-Table Name,Length
+        run: Get-ChildItem target/release -Filter *.exe | Format-Table Name,Length
 
       - name: Upload raw exe
         uses: actions/upload-artifact@v4
         with:
           name: raw-exe
-          path: src-tauri/target/release/*.exe
+          path: target/release/*.exe
           retention-days: 7
           if-no-files-found: error
 
@@ -60,7 +60,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: RepoRadar-windows-installer-${{ github.ref_name }}
-          path: src-tauri/target/release/bundle/nsis/*.exe
+          path: target/release/bundle/nsis/*.exe
           retention-days: 14
           if-no-files-found: error
 

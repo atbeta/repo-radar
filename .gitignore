@@ -7,6 +7,9 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Rust 构建产物（workspace 根 target/）
+/target/
+
 node_modules
 dist
 dist-ssr
