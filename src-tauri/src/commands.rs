@@ -6,7 +6,7 @@ use std::sync::Mutex;
 
 use radar_core::{BatchEvent, BatchOp, RepoStatus};
 use serde::{Deserialize, Serialize};
-use tauri::{AppHandle, Emitter, State};
+use tauri::{AppHandle, Emitter, Manager, State};
 
 const GIT_BIN: &str = "git";
 /// 事件名：批量操作进度
@@ -81,12 +81,12 @@ pub struct AppState {
 // ---------------------------------------------------------------------------
 
 #[tauri::command]
-fn get_settings(state: State<'_, AppState>) -> Settings {
+pub fn get_settings(state: State<'_, AppState>) -> Settings {
     state.settings.lock().unwrap().clone()
 }
 
 #[tauri::command]
-fn save_settings(
+pub fn save_settings(
     app: AppHandle,
     state: State<'_, AppState>,
     settings: Settings,
@@ -111,7 +111,7 @@ fn save_settings(
 
 /// 扫描所有根目录，返回发现的仓库路径列表
 #[tauri::command]
-async fn scan_repos(state: State<'_, AppState>) -> Result<Vec<String>, String> {
+pub async fn scan_repos(state: State<'_, AppState>) -> Result<Vec<String>, String> {
     let (roots, max_depth, exclude) = {
         let s = state.settings.lock().unwrap();
         (s.roots.clone(), s.max_depth, s.exclude.clone())
@@ -148,7 +148,7 @@ async fn scan_repos(state: State<'_, AppState>) -> Result<Vec<String>, String> {
 
 /// 读取指定仓库的状态；paths 为空时读取最近一次扫描结果
 #[tauri::command]
-async fn read_status(
+pub async fn read_status(
     state: State<'_, AppState>,
     paths: Option<Vec<String>>,
 ) -> Result<Vec<RepoStatus>, String> {
@@ -165,7 +165,7 @@ async fn read_status(
 
 /// 手动添加单个仓库（不经过扫描）
 #[tauri::command]
-async fn add_repo(state: State<'_, AppState>, path: String) -> Result<RepoStatus, String> {
+pub async fn add_repo(state: State<'_, AppState>, path: String) -> Result<RepoStatus, String> {
     let p = PathBuf::from(path.trim());
     if !p.join(".git").exists() {
         return Err(format!("不是 git 仓库: {}", p.display()));
@@ -211,12 +211,12 @@ async fn run_batch(
 }
 
 #[tauri::command]
-async fn batch_fetch(app: AppHandle, state: State<'_, AppState>) -> Result<usize, String> {
+pub async fn batch_fetch(app: AppHandle, state: State<'_, AppState>) -> Result<usize, String> {
     run_batch(app, state, BatchOp::Fetch).await
 }
 
 #[tauri::command]
-async fn batch_pull(app: AppHandle, state: State<'_, AppState>) -> Result<usize, String> {
+pub async fn batch_pull(app: AppHandle, state: State<'_, AppState>) -> Result<usize, String> {
     run_batch(app, state, BatchOp::Pull).await
 }
 
@@ -244,7 +244,7 @@ async fn run_batch_subset(
 }
 
 #[tauri::command]
-async fn fetch_repos(
+pub async fn fetch_repos(
     app: AppHandle,
     state: State<'_, AppState>,
     paths: Vec<String>,
@@ -253,7 +253,7 @@ async fn fetch_repos(
 }
 
 #[tauri::command]
-async fn pull_repos(
+pub async fn pull_repos(
     app: AppHandle,
     state: State<'_, AppState>,
     paths: Vec<String>,
